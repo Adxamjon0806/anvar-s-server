@@ -18,16 +18,8 @@ app.use(cors());
 app.use("", router);
 SetupWebsocket(server);
 
-const start = () => {
-  try {
-    app.listen(port, () => {
-      console.log(`Server work's at http://localhost:${port}`);
-    });
-  } catch (e) {
-    console.log(e);
-  }
-};
-
-start();
+app.listen(port, () => {
+  console.log(`Server work's at http://localhost:${port}`);
+});
 
 export { __dirname };
