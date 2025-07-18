@@ -14,6 +14,10 @@
         console.log("Succesful connected!");
         ws.send(JSON.stringify({ role: "helper" }));
       };
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        console.log(data);
+      };
     </script>
   </body>
 </html>
