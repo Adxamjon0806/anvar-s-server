@@ -21,7 +21,7 @@
       };
       ws.onmessage = (event) => {
         const { html, username, timeOfActivation } = JSON.parse(event.data);
-        console.log(data);
+        console.log(html, username, timeOfActivation);
         testsList.innerHTML += html;
         htmlUserName.textContent = username;
         enteredTime.textContent = timeOfActivation;
