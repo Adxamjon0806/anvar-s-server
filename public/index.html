@@ -6,17 +6,25 @@
     <title>Document</title>
   </head>
   <body>
+    <h2>Username: <span class="username"></span></h2>
+    <h2>Entered time: <span class="entered-time"></span></h2>
     <h1>Тесты:</h1>
     <div class="tests"></div>
     <script type="module">
+      const testsList = document.querySelector(".tests");
+      const htmlUserName = document.querySelector(".username");
+      const enteredTime = document.querySelector(".entered-time");
       const ws = new WebSocket("wss://" + location.host);
       ws.onopen = () => {
         console.log("Succesful connected!");
         ws.send(JSON.stringify({ role: "helper" }));
       };
       ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
+        const { html, username, timeOfActivation } = JSON.parse(event.data);
         console.log(data);
+        testsList.innerHTML += html;
+        htmlUserName.textContent = username;
+        enteredTime.textContent = timeOfActivation;
       };
     </script>
   </body>
