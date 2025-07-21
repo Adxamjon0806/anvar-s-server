@@ -1,6 +1,7 @@
 import { WebSocketServer } from "ws";
+import { v4 } from "uuid";
 
-let helperSocket = null;
+const clients = new Map();
 
 export function SetupWebsocket(server) {
   const wss = new WebSocketServer({ server });
@@ -9,6 +10,14 @@ export function SetupWebsocket(server) {
     ws.on("message", (message) => {
       try {
         const data = JSON.parse(message);
+
+        if (data.role === "client" && data.authenfication === false) {
+          const uniqueId = v4();
+          ws.id = uniqueId;
+          clients.set(ws.id, ws);
+          data.authenfication = true;
+          ws.send(JSON.stringify({ ...data, uniqueId, registered: true }));
+        }
 
         if (data.role === "helper") {
           console.log("Client registered as helper.");
