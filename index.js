@@ -1,6 +1,6 @@
 import express from "express";
 import path from "path";
-import https from "https";
+import http from "http";
 import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import router from "./router.js";
@@ -17,17 +17,7 @@ const app = express();
 const port = 3000;
 const DbUrl = process.env.DbURL;
 
-const sslOptions =
-  process.env.develop_procces === "development"
-    ? {
-        key: fs.readFileSync("./key.pem"),
-        cert: fs.readFileSync("./cert.pem"),
-      }
-    : {};
-
-console.log(sslOptions);
-
-const server = https.createServer(sslOptions, app);
+const server = http.createServer(app);
 
 app.use(express.json());
 app.use(cors());
@@ -39,7 +29,7 @@ const start = async () => {
     await mongoose.connect(DbUrl);
 
     server.listen(port, () => {
-      console.log(`Server work's at https://localhost:${port}`);
+      console.log(`Server work's at http://localhost:${port}`);
     });
   } catch (e) {
     console.error("Failed to start the server", e.message);
