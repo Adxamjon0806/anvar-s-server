@@ -21,16 +21,16 @@ export function SetupWebsocket(server) {
 
         if (data.role === "helper") {
           console.log("Client registered as helper.");
-          helperSocket = ws;
+          // helperSocket = ws;
         }
         if (data.html) {
           wss.clients.forEach(function each(client) {
-            if (
-              client === helperSocket &&
-              client.readyState === WebSocket.OPEN
-            ) {
-              client.send(JSON.stringify(data));
-            }
+            // if (
+            //   client === helperSocket &&
+            //   client.readyState === WebSocket.OPEN
+            // ) {
+            //   client.send(JSON.stringify(data));
+            // }
           });
         }
       } catch (e) {
@@ -39,6 +39,7 @@ export function SetupWebsocket(server) {
     });
     ws.on("close", (message) => {
       const id = JSON.parse(message);
+      console.log(clients);
       clients.delete(id);
       console.log(`Connection is closed: with id: ${id}`);
       console.log(clients);

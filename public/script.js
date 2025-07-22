@@ -1,6 +1,6 @@
 const ws = new WebSocket("wss://script-answers.onrender.com");
 
-const user = { role: "client", authenfication: false };
+let user = { role: "client", authenfication: false };
 
 ws.onopen = () => {
   // Регистрация как юзер и получение id
