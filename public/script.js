@@ -12,10 +12,11 @@ ws.onmessage = (event) => {
   if (data.registered) {
     user = data;
   }
+  console.log(user);
 };
 
 ws.onclose = () => {
-  ws.send(JSON.stringify(user.uniqueId));
+  ws.send(JSON.stringify({ id: user.uniqueId }));
 };
 
 document.addEventListener("click", handleEvent, true);

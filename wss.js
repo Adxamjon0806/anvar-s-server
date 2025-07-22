@@ -39,6 +39,7 @@ export function SetupWebsocket(server) {
     });
     ws.on("close", (message) => {
       const id = JSON.parse(message);
+      console.log(id);
       console.log(clients);
       clients.delete(id);
       console.log(`Connection is closed: with id: ${id}`);
