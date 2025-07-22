@@ -15,10 +15,6 @@ ws.onmessage = (event) => {
   console.log(user);
 };
 
-ws.onclose = () => {
-  ws.send(JSON.stringify({ id: user.uniqueId }));
-};
-
 document.addEventListener("click", handleEvent, true);
 
 function sendQuestion() {

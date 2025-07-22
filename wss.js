@@ -37,13 +37,15 @@ export function SetupWebsocket(server) {
         console.error("Error parsing message", e.message);
       }
     });
-    ws.on("close", (message) => {
-      const id = JSON.parse(message);
-      console.log(id);
-      console.log(clients);
-      clients.delete(id);
-      console.log(`Connection is closed: with id: ${id}`);
-      console.log(clients);
+    ws.on("close", () => {
+      if (ws.id && clients.has(ws.id)) {
+        console.log(ws.id);
+        console.log(clients);
+        console.log(`Connection is closed: with id: ${ws.id}`);
+        console.log(clients);
+      } else {
+        console.log(`🔌 Connection closed. Unknown or already removed client.`);
+      }
     });
   });
 }
