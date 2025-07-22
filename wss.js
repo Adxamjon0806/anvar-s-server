@@ -42,6 +42,7 @@ export function SetupWebsocket(server) {
         console.log(ws.id);
         console.log(clients);
         console.log(`Connection is closed: with id: ${ws.id}`);
+        clients.delete(ws.id);
         console.log(clients);
       } else {
         console.log(`🔌 Connection closed. Unknown or already removed client.`);
