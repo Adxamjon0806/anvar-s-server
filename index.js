@@ -7,7 +7,6 @@ import router from "./router.js";
 import cors from "cors";
 import { SetupWebsocket } from "./wss.js";
 import mongoose from "mongoose";
-import fs from "fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

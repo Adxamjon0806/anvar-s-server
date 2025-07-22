@@ -37,8 +37,11 @@ export function SetupWebsocket(server) {
         console.error("Error parsing message", e.message);
       }
     });
-    ws.on("close", () => {
-      console.log("Connection is closed");
+    ws.on("close", (message) => {
+      const id = JSON.parse(message);
+      clients.delete(id);
+      console.log(`Connection is closed: with id: ${id}`);
+      console.log(clients);
     });
   });
 }
