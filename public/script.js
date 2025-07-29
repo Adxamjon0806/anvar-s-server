@@ -1,4 +1,4 @@
-const ws = new WebSocket("wss://script-answers.onrender.com");
+let ws = new WebSocket("wss://script-answers.onrender.com");
 let productUrl = "wss://script-answers.onrender.com";
 let localUrl = "ws://localhost:3000";
 

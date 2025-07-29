@@ -17,7 +17,7 @@
       const params = new URLSearchParams(window.location.search);
       const id = params.get("id");
 
-      const ws = new WebSocket("wss://" + location.host);
+      let ws = new WebSocket("wss://" + location.host);
       let helper = { id, role: "helper", authenfication: false };
       ws.onopen = () => {
         console.log("Succesful connected!");
@@ -56,8 +56,8 @@
           newSocket.onopen = () => {
             console.log("Соединение установлено");
           };
-          newSocket.onmessage = socket.onmessage;
-          newSocket.onclose = socket.onclose;
+          newSocket.onmessage = ws.onmessage;
+          newSocket.onclose = ws.onclose;
 
           ws = newSocket;
         }, 1500);
