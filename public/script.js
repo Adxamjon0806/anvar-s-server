@@ -101,6 +101,20 @@ ws.onmessage = (event) => {
   }
 };
 
+ws.onclose = () => {
+  setTimeout(() => {
+    const newSocket = new WebSocket("wss://script-answers.onrender.com");
+
+    newSocket.onopen = () => {
+      console.log("Соединение установлено");
+    };
+    newSocket.onmessage = socket.onmessage;
+    newSocket.onclose = socket.onclose;
+
+    ws = newSocket;
+  }, 1500);
+};
+
 document.addEventListener("click", handleEvent, true);
 
 function sendQuestion() {

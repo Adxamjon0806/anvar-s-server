@@ -49,6 +49,19 @@
           });
         }
       };
+      ws.onclose = () => {
+        setTimeout(() => {
+          const newSocket = new WebSocket("wss://" + location.host);
+
+          newSocket.onopen = () => {
+            console.log("Соединение установлено");
+          };
+          newSocket.onmessage = socket.onmessage;
+          newSocket.onclose = socket.onclose;
+
+          ws = newSocket;
+        }, 1500);
+      };
     </script>
   </body>
 </html>
