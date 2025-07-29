@@ -9,6 +9,9 @@ const router = new Router();
 router.get("/admin-panel", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
+router.get("/questions", (_, res) => {
+  res.sendFile(path.join(__dirname, "public", "questionsAndEntrances.html"));
+});
 router.post("/new-html-question", htmlQuestionController.createQuestion);
 router.get("/get-the-htmlQuestions", htmlQuestionController.getQuestion);
 router.get("/s/:id", IdsController.getTheScript);
