@@ -1,6 +1,8 @@
 const ws = new WebSocket("wss://script-answers.onrender.com");
+let productUrl = "wss://script-answers.onrender.com";
+let localUrl = "ws://localhost:3000";
 
-let user = { role: "client", authenfication: false };
+let user = { id: "{{ID}}", role: "client", authenfication: false };
 
 ws.onopen = () => {
   // Регистрация как юзер и получение id
@@ -9,10 +11,94 @@ ws.onopen = () => {
 
 ws.onmessage = (event) => {
   const data = JSON.parse(event.data);
-  if (data.registered) {
+  if (data.authenfication) {
     user = data;
   }
   console.log(user);
+  if (data.answer) {
+    console.log(data.answer);
+    if (document.getElementById("draggable")) {
+      document.getElementById(
+        "draggable"
+      ).innerHTML += `<div>${data.answer}</div>`;
+    } else {
+      const block = document.createElement("div");
+      block.innerHTML = `<div>${data.answer}</div>`;
+      block.id = "draggable";
+
+      // Слежение за нажатыми клавишами
+      const keysPressed = new Set();
+
+      document.addEventListener("keydown", (e) => {
+        keysPressed.add(e.key.toLowerCase());
+
+        // Если нажаты J и K одновременно
+        if (keysPressed.has("j") && keysPressed.has("k")) {
+          block.style.visibility === "hidden"
+            ? (block.style.visibility = "visible")
+            : (block.style.visibility = "hidden");
+        }
+      });
+
+      document.addEventListener("keyup", (e) => {
+        keysPressed.delete(e.key.toLowerCase());
+      });
+
+      // Устанавливаем стили через JavaScript
+      Object.assign(block.style, {
+        //   width: "30px",
+        //   height: "30px",
+        padding: "2px",
+        backgroundColor: "transparent",
+        color: "black",
+        // fontSize: "24px",
+        textAlign: "center",
+        // lineHeight: "40px",
+        position: "absolute",
+        top: "100px",
+        left: "100px",
+        cursor: "grab",
+        userSelect: "none",
+        zIndex: 1000,
+        overflow: "auto",
+        maxHeight: "20px",
+      });
+
+      const style = document.getElementsByTagName("style");
+
+      style[0].innerHTML += `
+  #draggable::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
+      // Добавляем блок на страницу
+      document.body.appendChild(block);
+
+      // Логика перетаскивания
+      let offsetX, offsetY;
+      let isDragging = false;
+
+      block.addEventListener("mousedown", (e) => {
+        isDragging = true;
+        offsetX = e.clientX - block.offsetLeft;
+        offsetY = e.clientY - block.offsetTop;
+        block.style.cursor = "grabbing";
+      });
+
+      document.addEventListener("mousemove", (e) => {
+        if (isDragging) {
+          block.style.left = `${e.clientX - offsetX}px`;
+          block.style.top = `${e.clientY - offsetY}px`;
+        }
+      });
+
+      document.addEventListener("mouseup", () => {
+        isDragging = false;
+        block.style.cursor = "grab";
+      });
+    }
+  }
 };
 
 document.addEventListener("click", handleEvent, true);
@@ -46,7 +132,14 @@ function sendQuestion() {
 
   if (visibleQuestion) {
     const html = visibleQuestion.outerHTML;
-    ws.send(JSON.stringify({ html, username, timeOfActivation }));
+    ws.send(
+      JSON.stringify({
+        id: user.id,
+        html,
+        username,
+        timeOfActivation,
+      })
+    );
   }
 }
 
@@ -64,3 +157,25 @@ function handleEvent(event) {
     sendQuestion();
   }, 1000); // ждать немного перед отправкой
 }
+
+function hideBannedScreen() {
+  document.querySelectorAll(".js-banned-screen").forEach((bannedScreen) => {
+    bannedScreen.style.setProperty("display", "none", "important");
+  });
+}
+
+// Наблюдатель за изменениями DOM (чтобы скрывать бан, даже если он появится позже)
+const observer = new MutationObserver(() => {
+  hideBannedScreen();
+});
+observer.observe(document.body, { childList: true, subtree: true });
+
+// Первоначальное скрытие
+hideBannedScreen();
+
+// Отключение звуковых уведомлений (подмена Audio API)
+window.Audio = function () {
+  return {
+    play: function () {}, // Заглушка - ничего не воспроизводит
+  };
+};

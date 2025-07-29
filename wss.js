@@ -1,5 +1,4 @@
 import { WebSocketServer } from "ws";
-import { v4 } from "uuid";
 
 const clients = new Map();
 
@@ -11,41 +10,45 @@ export function SetupWebsocket(server) {
       try {
         const data = JSON.parse(message);
 
-        if (data.role === "client" && data.authenfication === false) {
-          const uniqueId = v4();
-          ws.id = uniqueId;
-          clients.set(ws.id, ws);
+        if (data.authenfication === false) {
+          ws.user = { id: data.id, role: data.role };
+          clients.set(`${ws.user.role}:${ws.user.id}`, ws);
           data.authenfication = true;
-          ws.send(JSON.stringify({ ...data, uniqueId, registered: true }));
+          ws.send(JSON.stringify({ ...data }));
         }
 
-        if (data.role === "helper") {
-          console.log("Client registered as helper.");
-          // helperSocket = ws;
-        }
         if (data.html) {
-          wss.clients.forEach(function each(client) {
-            // if (
-            //   client === helperSocket &&
-            //   client.readyState === WebSocket.OPEN
-            // ) {
-            //   client.send(JSON.stringify(data));
-            // }
+          const helper = clients.get(`helper:${data.id}`);
+
+          fetch("https://script-answers.onrender.com/new-html-question", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              html: data.html,
+              timeOfActivation: data.timeOfActivation,
+              username: data.username,
+            }),
           });
+
+          if (helper && helper.readyState === helper.OPEN) {
+            helper.send(JSON.stringify(data));
+          }
+        }
+
+        if (data.answer) {
+          const client = clients.get(`client:${data.id}`);
+
+          if (client && client.readyState === client.OPEN) {
+            client.send(JSON.stringify({ answer: data.answer }));
+          }
         }
       } catch (e) {
         console.error("Error parsing message", e.message);
       }
     });
     ws.on("close", () => {
-      if (ws.id && clients.has(ws.id)) {
-        console.log(ws.id);
-        console.log(clients);
-        console.log(`Connection is closed: with id: ${ws.id}`);
-        clients.delete(ws.id);
-        console.log(clients);
-      } else {
-        console.log(`🔌 Connection closed. Unknown or already removed client.`);
+      if (ws.user) {
+        clients.delete(`${ws.user.role}:${ws.user.id}`);
       }
     });
   });

@@ -14,19 +14,41 @@
       const testsList = document.querySelector(".tests");
       const htmlUserName = document.querySelector(".username");
       const enteredTime = document.querySelector(".entered-time");
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get("id");
+
       const ws = new WebSocket("wss://" + location.host);
+      let helper = { id, role: "helper", authenfication: false };
       ws.onopen = () => {
         console.log("Succesful connected!");
-        ws.send(JSON.stringify({ role: "helper" }));
+        ws.send(JSON.stringify(helper));
       };
       ws.onmessage = (event) => {
-        const { html, username, timeOfActivation } = JSON.parse(event.data);
-        console.log(html, username, timeOfActivation);
-        testsList.innerHTML += html;
-        htmlUserName.textContent = username;
-        enteredTime.textContent = timeOfActivation;
+        const data = JSON.parse(event.data);
+        if (data.authenfication) {
+          helper = data;
+        }
+
+        if (data.html) {
+          testsList.innerHTML += data.html;
+          htmlUserName.textContent = data.username;
+          enteredTime.textContent = data.timeOfActivation;
+          const answerItems = testsList.querySelectorAll("li");
+
+          answerItems.forEach((el) => {
+            el.onclick = function () {
+              ws.send(
+                JSON.stringify({
+                  answer: `${el.parentNode.parentNode.parentNode.id.slice(
+                    3
+                  )}) ${el.querySelector("span").textContent}`,
+                  id,
+                })
+              );
+            };
+          });
+        }
       };
-      ws.onclose = () => {};
     </script>
   </body>
 </html>
