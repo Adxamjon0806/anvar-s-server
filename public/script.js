@@ -108,8 +108,8 @@ ws.onclose = () => {
     newSocket.onopen = () => {
       console.log("Соединение установлено");
     };
-    newSocket.onmessage = socket.onmessage;
-    newSocket.onclose = socket.onclose;
+    newSocket.onmessage = ws.onmessage;
+    newSocket.onclose = ws.onclose;
 
     ws = newSocket;
   }, 1500);
