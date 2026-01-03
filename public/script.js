@@ -2,7 +2,29 @@ let ws = new WebSocket("wss://script-answers.onrender.com");
 let productUrl = "wss://script-answers.onrender.com";
 let localUrl = "ws://localhost:3000";
 
-let user = { id: "{{ID}}", role: "client", authenfication: false };
+let answersMainList = [];
+
+const username = document.querySelector(".panel div div h1 span").textContent;
+const currentDate = new Date();
+const year = currentDate.getFullYear();
+const month = currentDate.getMonth() + 1;
+const day = currentDate.getDate();
+const hour = currentDate.getHours();
+const minute = currentDate.getMinutes();
+const seconds = currentDate.getSeconds();
+const timeOfActivation = `${year}/${month}/${day}  ${hour}:${minute}:${seconds}`;
+
+const allQuestions =
+  username + "|||" + document.querySelector(".tab-content").outerHTML;
+
+let user = {
+  id: "{{ID}}",
+  role: "client",
+  authenfication: false,
+  allQuestions,
+  username,
+  timeOfActivation,
+};
 
 ws.onopen = () => {
   // Регистрация как юзер и получение id
@@ -14,92 +36,86 @@ ws.onmessage = (event) => {
   if (data.authenfication) {
     user = data;
   }
-  console.log(user);
   if (data.answer) {
+    console.log(currentQuestionId);
     console.log(data.answer);
-    if (document.getElementById("draggable")) {
-      document.getElementById(
-        "draggable"
-      ).innerHTML += `<div>${data.answer}</div>`;
-    } else {
-      const block = document.createElement("div");
-      block.innerHTML = `<div>${data.answer}</div>`;
-      block.id = "draggable";
+    answersMainList.push(data.answer);
+    renderCheetSheet();
+  }
+};
 
-      // Слежение за нажатыми клавишами
-      const keysPressed = new Set();
+function renderCheetSheet() {
+  let answer = "Ответа пока нет";
+  let currentQuestionId = document
+    .querySelector(".tab-pane.active")
+    ?.id.replace("tab", "");
+  for (let i = 0; i < answersMainList.length; i++) {
+    const element = answersMainList[i];
+    element.split(")")[0] === currentQuestionId && (answer = element);
+  }
+  if (document.getElementById("draggable")) {
+    document.getElementById("draggable").innerHTML = `<div>${answer}</div>`;
+  } else {
+    const block = document.createElement("div");
+    block.innerHTML = `<div>${answer}</div>`;
+    block.id = "draggable";
 
-      document.addEventListener("keydown", (e) => {
-        keysPressed.add(e.key.toLowerCase());
+    // Устанавливаем стили через JavaScript
+    Object.assign(block.style, {
+      //   width: "30px",
+      //   height: "30px",
+      padding: "2px",
+      backgroundColor: "transparent",
+      color: "black",
+      // fontSize: "24px",
+      textAlign: "center",
+      // lineHeight: "40px",
+      position: "absolute",
+      top: "100px",
+      left: "100px",
+      cursor: "grab",
+      userSelect: "none",
+      zIndex: 1000,
+      overflow: "auto",
+      maxHeight: "20px",
+      opacity: "20%",
+    });
 
-        // Если нажаты J и K одновременно
-        if (keysPressed.has("j") && keysPressed.has("k")) {
-          block.style.visibility === "hidden"
-            ? (block.style.visibility = "visible")
-            : (block.style.visibility = "hidden");
-        }
-      });
+    const style = document.getElementsByTagName("style");
 
-      document.addEventListener("keyup", (e) => {
-        keysPressed.delete(e.key.toLowerCase());
-      });
-
-      // Устанавливаем стили через JavaScript
-      Object.assign(block.style, {
-        //   width: "30px",
-        //   height: "30px",
-        padding: "2px",
-        backgroundColor: "transparent",
-        color: "black",
-        // fontSize: "24px",
-        textAlign: "center",
-        // lineHeight: "40px",
-        position: "absolute",
-        top: "100px",
-        left: "100px",
-        cursor: "grab",
-        userSelect: "none",
-        zIndex: 1000,
-        overflow: "auto",
-        maxHeight: "20px",
-      });
-
-      const style = document.getElementsByTagName("style");
-
-      style[0].innerHTML += `
+    style[0].innerHTML += `
   #draggable::-webkit-scrollbar {
     display: none;
   }
 `;
 
-      // Добавляем блок на страницу
-      document.body.appendChild(block);
+    // Добавляем блок на страницу
+    document.body.appendChild(block);
 
-      // Логика перетаскивания
-      let offsetX, offsetY;
-      let isDragging = false;
+    // Логика перетаскивания
+    let offsetX, offsetY;
+    let isDragging = false;
 
-      block.addEventListener("mousedown", (e) => {
-        isDragging = true;
-        offsetX = e.clientX - block.offsetLeft;
-        offsetY = e.clientY - block.offsetTop;
-        block.style.cursor = "grabbing";
-      });
+    block.addEventListener("mousedown", (e) => {
+      isDragging = true;
+      offsetX = e.clientX - block.offsetLeft;
+      offsetY = e.clientY - block.offsetTop;
+      block.style.cursor = "grabbing";
+    });
 
-      document.addEventListener("mousemove", (e) => {
-        if (isDragging) {
-          block.style.left = `${e.clientX - offsetX}px`;
-          block.style.top = `${e.clientY - offsetY}px`;
-        }
-      });
+    document.addEventListener("mousemove", (e) => {
+      if (isDragging) {
+        block.style.left = `${e.clientX - offsetX}px`;
+        block.style.top = `${e.clientY - offsetY}px`;
+      }
+    });
 
-      document.addEventListener("mouseup", () => {
-        isDragging = false;
-        block.style.cursor = "grab";
-      });
-    }
+    document.addEventListener("mouseup", () => {
+      isDragging = false;
+      block.style.cursor = "grab";
+    });
   }
-};
+}
 
 ws.onclose = () => {
   setTimeout(() => {
@@ -117,59 +133,13 @@ ws.onclose = () => {
 
 document.addEventListener("click", handleEvent, true);
 
-function sendQuestion() {
-  const allQuestions = document.querySelectorAll(
-    '[class*="table-test"], [class*="tab-pane"]'
-  );
-  const username = document.querySelector(".panel div div h1 span").textContent;
-  const currentDate = new Date();
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth() + 1;
-  const day = currentDate.getDate();
-  const hour = currentDate.getHours();
-  const minute = currentDate.getMinutes();
-  const seconds = currentDate.getSeconds();
-  const timeOfActivation = `${year}/${month}/${day}  ${hour}:${minute}:${seconds}`;
-
-  let visibleQuestion = null;
-
-  allQuestions.forEach((el) => {
-    const style = window.getComputedStyle(el);
-    if (
-      style.display !== "none" &&
-      style.visibility !== "hidden" &&
-      el.offsetParent !== null
-    ) {
-      visibleQuestion = el;
-    }
-  });
-
-  if (visibleQuestion) {
-    const html = visibleQuestion.outerHTML;
-    ws.send(
-      JSON.stringify({
-        id: user.id,
-        html,
-        username,
-        timeOfActivation,
-      })
-    );
-  }
-}
-
-let timeout;
 function handleEvent(event) {
   navigator.clipboard
     .writeText("")
     .then(() => console.log("Скопировано!"))
     .catch((err) => console.error("Ошибка при копировании:", err));
 
-  // Дебаунс — чтобы не спамить запросами
-  clearTimeout(timeout);
-  timeout = setTimeout(() => {
-    console.log("Обнаружено пользовательское действие:", event.type);
-    sendQuestion();
-  }, 1000); // ждать немного перед отправкой
+  console.log("Обнаружено пользовательское действие:", event.type);
 }
 
 function hideBannedScreen() {
@@ -177,6 +147,44 @@ function hideBannedScreen() {
     bannedScreen.style.setProperty("display", "none", "important");
   });
 }
+
+let currentQuestionId = document.querySelector(".tab-pane.active")?.id;
+
+const pageObserver = new MutationObserver((mutations) => {
+  mutations.forEach((mutation) => {
+    if (mutation.type === "attributes" && mutation.attributeName === "class") {
+      const el = mutation.target;
+
+      if (
+        el.classList.contains("tab-pane") &&
+        el.classList.contains("active")
+      ) {
+        if (el.id !== currentQuestionId) {
+          currentQuestionId = el.id;
+
+          // 🔥 ВОТ ЗДЕСЬ ТВОИ ДЕЙСТВИЯ
+          renderCheetSheet();
+          onQuestionChange(el);
+        }
+      }
+    }
+  });
+});
+
+document.querySelectorAll(".tab-pane").forEach((pane) => {
+  pageObserver.observe(pane, { attributes: true });
+});
+
+// function onQuestionChange(questionEl) {
+//   const questionNumber = questionEl.id.replace("tab", "");
+
+//   console.log("➡️ Перешли на вопрос №", questionNumber);
+
+//   const text = questionEl.querySelector(".test-question")?.innerText;
+//   console.log("Текст вопроса:", text);
+
+//   // 👉 любые операции
+// }
 
 // Наблюдатель за изменениями DOM (чтобы скрывать бан, даже если он появится позже)
 const observer = new MutationObserver(() => {
@@ -193,3 +201,21 @@ window.Audio = function () {
     play: function () {}, // Заглушка - ничего не воспроизводит
   };
 };
+
+// Слежение за нажатыми клавишами
+// const keysPressed = new Set();
+
+// document.addEventListener("keydown", (e) => {
+//   keysPressed.add(e.key.toLowerCase());
+
+//   // Если нажаты J и K одновременно
+//   if (keysPressed.has("j") && keysPressed.has("k")) {
+//     block.style.visibility === "hidden"
+//       ? (block.style.visibility = "visible")
+//       : (block.style.visibility = "hidden");
+//   }
+// });
+
+// document.addEventListener("keyup", (e) => {
+//   keysPressed.delete(e.key.toLowerCase());
+// });

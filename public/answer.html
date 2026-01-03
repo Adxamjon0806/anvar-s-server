@@ -29,14 +29,17 @@
           helper = data;
         }
 
-        if (data.html) {
-          testsList.innerHTML += data.html;
+        console.log(data);
+
+        if (data.htmlToHelper) {
           htmlUserName.textContent = data.username;
           enteredTime.textContent = data.timeOfActivation;
+          testsList.innerHTML = data.htmlToHelper;
           const answerItems = testsList.querySelectorAll("li");
 
           answerItems.forEach((el) => {
             el.onclick = function () {
+              console.log("Answered to question");
               ws.send(
                 JSON.stringify({
                   answer: `${el.parentNode.parentNode.parentNode.id.slice(
@@ -48,6 +51,26 @@
             };
           });
         }
+
+        // if (data.html) {
+        //   testsList.innerHTML += data.html;
+        //   htmlUserName.textContent = data.username;
+        //   enteredTime.textContent = data.timeOfActivation;
+        //   const answerItems = testsList.querySelectorAll("li");
+
+        //   answerItems.forEach((el) => {
+        //     el.onclick = function () {
+        //       ws.send(
+        //         JSON.stringify({
+        //           answer: `${el.parentNode.parentNode.parentNode.id.slice(
+        //             3
+        //           )}) ${el.querySelector("span").textContent}`,
+        //           id,
+        //         })
+        //       );
+        //     };
+        //   });
+        // }
       };
       ws.onclose = () => {
         setTimeout(() => {
@@ -55,6 +78,7 @@
 
           newSocket.onopen = () => {
             console.log("Соединение установлено");
+            ws.send(JSON.stringify(helper));
           };
           newSocket.onmessage = ws.onmessage;
           newSocket.onclose = ws.onclose;
